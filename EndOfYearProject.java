@@ -48,6 +48,7 @@ public class EndOfYearProject extends JPanel implements KeyListener, Runnable
 		reverse = 1;
 		gameOn = true;
 		checker = true;
+		h = 10; // Initialize coin animation variable
 
 
 		enemies = new ArrayList<Rectangle>();
@@ -109,7 +110,8 @@ public class EndOfYearProject extends JPanel implements KeyListener, Runnable
 				enemyDirections.add(0);
 				enemyDirections.add(2);
 
-				coins.add(new Rectangle(120, 200, h, 20));
+				// Add coins for level 2
+				setupLevel2Coins();
 				break;
 		}
 
@@ -139,6 +141,15 @@ public class EndOfYearProject extends JPanel implements KeyListener, Runnable
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		t=new Thread(this);
 		t.start();
+	}
+
+	// Method to setup level 2 coins
+	private void setupLevel2Coins() {
+		coins.clear();
+		coins.add(new Rectangle(240, 210, 20, 20));
+		coins.add(new Rectangle(260, 230, 20, 20));
+		coins.add(new Rectangle(280, 250, 20, 20));
+		coins.add(new Rectangle(300, 270, 20, 20));
 	}
 
 	public void drawEnemy(Graphics2D g2d, int ex, int ey) {
@@ -175,7 +186,7 @@ public class EndOfYearProject extends JPanel implements KeyListener, Runnable
 		g2d.setFont(f);
 		g2d.drawString((level)+"/30",325,35);
 
-		//draw level
+		//draw deaths
 		g2d.setColor(Color.WHITE);
 		g2d.setFont(f);
 		g2d.drawString("DEATHS: "+deaths,575,35);
@@ -340,25 +351,25 @@ public class EndOfYearProject extends JPanel implements KeyListener, Runnable
 
 				        switch(direction) {
 				            case 0: // moving right
-				                enemy.x += 4;
+				                enemy.x += 0;
 				                if(enemy.x >= maxX) {
 				                    enemyDirections.set(i, 1);
 				                }
 				                break;
 				            case 1: // moving down
-				                enemy.y += 4;
+				                enemy.y += 0;
 				                if(enemy.y >= maxY) {
 				                    enemyDirections.set(i, 2);
 				                }
 				                break;
 				            case 2: // moving left
-				                enemy.x -= 4;
+				                enemy.x -= 0;
 				                if(enemy.x <= minX) {
 				                    enemyDirections.set(i, 3);
 				                }
 				                break;
 				            case 3: // moving up
-				                enemy.y -= 4;
+				                enemy.y -= 0;
 				                if(enemy.y <= minY) {
 				                    enemyDirections.set(i, 0);
 				                }
@@ -383,25 +394,28 @@ public class EndOfYearProject extends JPanel implements KeyListener, Runnable
 						death();
 				}
 
+				// Check coin collection
 				for(int i = coins.size()-1; i >= 0; i--) {
 				    Rectangle coin = coins.get(i);
 				    if(r1.intersects(coin)) {
 				        coins.remove(i);
 				        coinsCollected++;
+				        System.out.println("Coin collected! Total: " + coinsCollected); // Debug output
 				    }
 				}
 
-
+				// Check win conditions
 				if(level == 1) {
 				    if (endArea != null && endArea.intersects(r1.x, r1.y, r1.width, r1.height)) {
 				        win();
 				    }
 				} else if(level == 2) {
-				    if(coinsCollected >= 4) {
+				    // Must collect all 4 coins AND return to starting area
+				    if(coinsCollected >= 4 && startArea.intersects(r1.x, r1.y, r1.width, r1.height)) {
+				        System.out.println("Level 2 won with " + coinsCollected + " coins and returned to start!"); // Debug output
 				        win();
 				    }
 				}
-
 
 				//must be entirely inside for contains to be true
 				//polygons are useful for shapes that are irregular
@@ -428,15 +442,24 @@ public class EndOfYearProject extends JPanel implements KeyListener, Runnable
 
 	public void death() {
 		deaths++;
+		System.out.println("Player died! Resetting position and coins."); // Debug output
+
+		// Reset player position
 		if (level == 1) {
-		        x = 100;
-		        y = 200;
-		    } else if (level == 2) {
-		        x = c + 5*s;
-		        y = d + 5*s;
-		    }
-		    repaint();
-		    coinsCollected = 0;
+		    x = 100;
+		    y = 200;
+		} else if (level == 2) {
+		    x = c + 5*s;
+		    y = d + 5*s;
+		}
+
+		// Reset coins collected and restore all coins
+		coinsCollected = 0;
+		if(level == 2) {
+			setupLevel2Coins(); // Restore all coins
+		}
+
+		repaint();
 	}
 
 	public void updatePolygon() {
@@ -468,6 +491,9 @@ public class EndOfYearProject extends JPanel implements KeyListener, Runnable
 				enemies.add(new Rectangle(596-224+184, 190+40, 25, 25));
 				enemies.add(new Rectangle(224, 190+80, 25, 25));
 				enemies.add(new Rectangle(596-224+184, 190+120, 25, 25));
+
+				// Clear coins for level 1
+				coins.clear();
 	            break;
 
 	        case 2:
@@ -490,7 +516,7 @@ public class EndOfYearProject extends JPanel implements KeyListener, Runnable
 			    enemies.add(new Rectangle(204, 204, 25, 25));
 			    enemies.add(new Rectangle(328, 276, 25, 25));
 
-			    // Add 6 stationary enemies
+			    // Add 12 stationary enemies
 			    enemies.add(new Rectangle(228+40, 142-40, 25, 25));
 			    enemies.add(new Rectangle(268+40, 180-40, 25, 25));
 			    enemies.add(new Rectangle(268+80, 222-40, 25, 25));
@@ -513,34 +539,33 @@ public class EndOfYearProject extends JPanel implements KeyListener, Runnable
 			    enemyDirections.add(0);
 			    enemyDirections.add(2);
 
-			    coins.add(new Rectangle(180, 120, 20, 20));
-				coins.add(new Rectangle(400, 150, 20, 20));
-				coins.add(new Rectangle(200, 350, 20, 20));
-				coins.add(new Rectangle(380, 300, 20, 20));
+			    // Setup coins for level 2
+			    setupLevel2Coins();
 			    break;
-
 	    }
 	}
 
 	public void win() {
+	    System.out.println("Win called! Current level: " + level); // Debug output
 	    level++;
-	    updatePolygon();
 
 	    if (level == 1) {
 	        x = 100;
 	        y = 200;
 	    } else if (level == 2) {
-			System.out.println("restricting movement");
+			System.out.println("Moving to level 2");
 	        x = 250;
 	        y = 250;
 	    } else if (level == 3) {
+			System.out.println("Resetting to level 1");
 			level = 1;
 			x = 100;
 	        y = 200;
 		}
+
+		// Reset coins collected
 		coinsCollected = 0;
 		updatePolygon();
-
 	}
 
 	public boolean insideRight() {
@@ -587,7 +612,6 @@ public class EndOfYearProject extends JPanel implements KeyListener, Runnable
 		if(ke.getKeyCode()==39 || ke.getKeyCode()==68)
 			right = true;
 
-
 		if(ke.getKeyCode()==38 || ke.getKeyCode()==87)
 			up = true;
 
@@ -597,6 +621,7 @@ public class EndOfYearProject extends JPanel implements KeyListener, Runnable
 		if(ke.getKeyCode()==40 || ke.getKeyCode()==83)
 			down = true;
 	}
+
 	public void keyReleased(KeyEvent ke)
 	{
 		//this will do stuff if you let go of a key
@@ -613,15 +638,17 @@ public class EndOfYearProject extends JPanel implements KeyListener, Runnable
 			down = false;
 
 	}
+
 	public void keyTyped(KeyEvent ke)
 	{
 		//prob don't use this as it requires a key to be
 		//pressed and released to do anything
 		if(!gameOn) {
-			if(ke.getKeyCode()==10)
+			if(ke.getKeyChar() == '\n') // Changed to use getKeyChar() for Enter key
 				gameOn = true;
 		}
 	}
+
 	public static void main(String args[])
 	{
 		EndOfYearProject app=new EndOfYearProject();
