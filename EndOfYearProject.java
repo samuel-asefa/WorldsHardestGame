@@ -21,6 +21,8 @@ public class EndOfYearProject extends JPanel implements KeyListener, Runnable
 	private Color color;
 	private ArrayList<Rectangle> coins;
 	private int coinsCollected;
+   
+   public boolean pause;
 
 
 	// Enemy management with ArrayLists
@@ -48,6 +50,7 @@ public class EndOfYearProject extends JPanel implements KeyListener, Runnable
 		reverse = 1;
 		gameOn = true;
 		checker = true;
+      pause = false;
 		h = 10; // Initialize coin animation variable
 
 
@@ -146,17 +149,17 @@ public class EndOfYearProject extends JPanel implements KeyListener, Runnable
 	// Method to setup level 2 coins
 	private void setupLevel2Coins() {
 		coins.clear();
-		coins.add(new Rectangle(240, 210, 20, 20));
-		coins.add(new Rectangle(260, 230, 20, 20));
-		coins.add(new Rectangle(280, 250, 20, 20));
-		coins.add(new Rectangle(300, 270, 20, 20));
+		coins.add(new Rectangle(110, 245, 20, 20));
+		coins.add(new Rectangle(290, 65, 20, 20));
+		coins.add(new Rectangle(470, 245, 20, 20));
+		coins.add(new Rectangle(290, 425, 20, 20));
 	}
 
 	public void drawEnemy(Graphics2D g2d, int ex, int ey) {
 		g2d.setColor(Color.BLACK);
 		g2d.fillOval(ex,ey,25,25);
 		g2d.setColor(Color.BLUE);
-		g2d.fillOval(ex+3,ey+3,19,19);
+		g2d.fillOval(ex+5,ey+5,15,15);
 	}
 
 	public void paintComponent(Graphics g)
@@ -244,14 +247,21 @@ public class EndOfYearProject extends JPanel implements KeyListener, Runnable
 		                g2d.fillRect(xPos, yPos, s, s);
 		            }
 		        }
+              
+              g2d.setColor(new Color(180,255,181));
+		       g2d.fillRect(c+4*s,d+4*s,2*s,2*s);
+
 		        break;
 		}
+      
+      
+
 
 		//Your character
-		g2d.setColor(Color.BLACK);
+		g2d.setColor(new Color(155,0,0));
 		g2d.fillRect(x,y,25,25);
 		g2d.setColor(Color.RED);
-		g2d.fillRect(x+3,y+3,19,19);
+		g2d.fillRect(x+5,y+5,15,15);
 
 		// Draw enemies from ArrayList
 		for(Rectangle enemy : enemies) {
@@ -260,12 +270,11 @@ public class EndOfYearProject extends JPanel implements KeyListener, Runnable
 
 		//coin
 		for(Rectangle coin : coins) {
-		    g2d.setColor(Color.BLACK);
+		    g2d.setColor(new Color(207, 158, 17));
 		    g2d.fillOval(coin.x, coin.y, 20, 20);
 		    g2d.setColor(Color.YELLOW);
-		    g2d.fillOval(coin.x+2, coin.y+2, 16, 16);
+		    g2d.fillOval(coin.x+4, coin.y+4, 12, 12);
 		}
-
 
 		if(!gameOn) {
 			g2d.setColor(Color.BLACK);
@@ -351,25 +360,25 @@ public class EndOfYearProject extends JPanel implements KeyListener, Runnable
 
 				        switch(direction) {
 				            case 0: // moving right
-				                enemy.x += 0;
+				                enemy.x += (4);
 				                if(enemy.x >= maxX) {
 				                    enemyDirections.set(i, 1);
 				                }
 				                break;
 				            case 1: // moving down
-				                enemy.y += 0;
+				                enemy.y += (4);
 				                if(enemy.y >= maxY) {
 				                    enemyDirections.set(i, 2);
 				                }
 				                break;
 				            case 2: // moving left
-				                enemy.x -= 0;
+				                enemy.x -= (4);
 				                if(enemy.x <= minX) {
 				                    enemyDirections.set(i, 3);
 				                }
 				                break;
 				            case 3: // moving up
-				                enemy.y -= 0;
+				                enemy.y -= (4);
 				                if(enemy.y <= minY) {
 				                    enemyDirections.set(i, 0);
 				                }
@@ -389,10 +398,12 @@ public class EndOfYearProject extends JPanel implements KeyListener, Runnable
 				td = new Rectangle(x,y+3,25,25);
 
 				// Check collision with enemies from ArrayList
-				for(Rectangle enemy : enemies) {
+				if(!pause) {
+            for(Rectangle enemy : enemies) {
 					if (r1.intersects(enemy))
 						death();
 				}
+            }
 
 				// Check coin collection
 				for(int i = coins.size()-1; i >= 0; i--) {
@@ -454,9 +465,7 @@ public class EndOfYearProject extends JPanel implements KeyListener, Runnable
 		}
 
 		// Reset coins collected and restore all coins
-		coinsCollected = 0;
 		if(level == 2) {
-			setupLevel2Coins(); // Restore all coins
 		}
 
 		repaint();
@@ -477,11 +486,7 @@ public class EndOfYearProject extends JPanel implements KeyListener, Runnable
 	            xPoints = new int[]{c, c+3*s, c+3*s, c+4*s, c+4*s, c+13*s, c+13*s, c+18*s, c+18*s, c+15*s, c+15*s, c+14*s, c+14*s, c+5*s, c+5*s, c};
 	            yPoints = new int[]{d, d, d+5*s, d+5*s, d+1*s, d+1*s, d, d, d+6*s, d+6*s, d+1*s, d+1*s, d+5*s, d+5*s, d+6*s, d+6*s};
 	            poly = new Polygon(xPoints, yPoints, xPoints.length);
-
-	            int[] startXPoints = {c, c+3*s, c+3*s, c};
-	            int[] startYPoints = {d, d, d+6*s, d+6*s};
-	            startArea = new Polygon(startXPoints, startYPoints, startXPoints.length);
-
+               
 	            int[] endXPoints = {c+15*s, c+18*s, c+18*s, c+15*s};
 	            int[] endYPoints = {d, d, d+6*s, d+6*s};
 	            endArea = new Polygon(endXPoints, endYPoints, endXPoints.length);
@@ -507,6 +512,8 @@ public class EndOfYearProject extends JPanel implements KeyListener, Runnable
 			    int[] startYPoints2 = {d+4*s, d+4*s, d+6*s, d+6*s};
 			    startArea = new Polygon(startXPoints2, startYPoints2, startXPoints2.length);
 			    endArea = null;
+             
+             
 
 			    // Setup level 2 enemies - 6 moving
 			    enemies.add(new Rectangle(104, 104, 25, 25));
@@ -636,6 +643,9 @@ public class EndOfYearProject extends JPanel implements KeyListener, Runnable
 
 		if(ke.getKeyCode()==40 || ke.getKeyCode()==83)
 			down = false;
+      if(ke.getKeyCode()==80) {
+         pause = !pause;
+      }
 
 	}
 
